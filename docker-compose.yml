@@ -1,0 +1,68 @@
+version: '2.28'
+
+services:
+  octoprint:
+    image: octoprint/octoprint
+    restart: unless-stopped
+    container_name: octoprint
+    ports:
+      - 80:80
+    # devices:
+    # use `python -m serial.tools.miniterm` to see what the name is of the printer, this requires pyserial
+    #  - /dev/ttyACM0:/dev/ttyACM0
+    #  - /dev/video0:/dev/video0
+    volumes:
+    - ./octoprint:/octoprint
+    # uncomment the lines below to ensure camera streaming is enabled when
+    # you add a video device
+    #environment:
+    #  - ENABLE_MJPG_STREAMER=true
+  
+  ####
+  # uncomment if you wish to edit the configuration files of octoprint
+  # refer to docs on configuration editing for more information
+  ####
+
+  #config-editor:
+  #  image: linuxserver/code-server
+  #  ports:
+  #    - 8443:8443
+  #  depends_on:
+  #    - octoprint
+  #  restart: unless-stopped
+  #  environment:
+  #    - PUID=0
+  #    - PGID=0
+  #    - TZ=America/Chicago
+  #  volumes:
+  #    - octoprint:/octoprint
+
+  pihole:
+      container_name: pihole
+      image: pihole/pihole:latest
+      # For DHCP it is recommended to remove these ports and instead add: network_mode: "host"
+      ports:
+        - "53:53/tcp"
+        - "53:53/udp"
+        #- "67:67/udp" # Only required if you are using Pi-hole as your DHCP server
+        - "8080:80/tcp"
+        - "4443:443/tcp"
+      environment:
+        TZ: 'America/Mexico_City'
+        WEBPASSWORD: 'juanalacubana'
+      # Volumes store your data between container upgrades
+      volumes:
+        - './etc-pihole:/etc/pihole'
+        - './etc-dnsmasq.d:/etc/dnsmasq.d'
+      dns:
+        - 127.0.0.1
+        - 1.1.1.1
+      #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
+      #cap_add:
+       # - NET_ADMIN # Required if you are using Pi-hole as your DHCP server, else not needed
+      restart: unless-stopped
+volumes:
+  octoprint:
+
+
+  
